@@ -1,0 +1,202 @@
+--- origsrc/squid-3.3.3/acinclude/os-deps.m4	2013-03-12 11:17:07.000000000 +0100
++++ src/squid-3.3.3/acinclude/os-deps.m4	2013-05-16 19:28:34.750571300 +0200
+@@ -282,10 +282,9 @@ SQUID_STATE_SAVE(maxfd)
+ int main(int argc, char **argv) {
+ 	FILE *fp;
+ 	int i,j;
+-#if defined(__CYGWIN32__) || defined (__CYGWIN__)
+-    /* getrlimit and sysconf returns bogous values on cygwin32.
++#if defined (__CYGWIN__)
++    /* getrlimit and sysconf returns bogous values on cygwin.
+      * Number of fds is virtually unlimited in cygwin (sys/param.h)
+-     * __CYGWIN32__ is deprecated.
+      */
+     i = NOFILE;
+ #else
+@@ -431,7 +430,7 @@ int main(int argc, char **argv)
+ {
+ 	FILE *fp;
+         int fd,val=0;
+-#if (defined(WIN32) || defined(__WIN32__) || defined(__WIN32)) && !(defined(__CYGWIN32__) || defined(__CYGWIN__))
++#if (defined(WIN32) || defined(__WIN32__) || defined(__WIN32)) && !defined(__CYGWIN__)
+         int len=sizeof(int);
+ 	WSADATA wsaData;
+ 	WSAStartup(2, &wsaData);
+@@ -439,7 +438,7 @@ int main(int argc, char **argv)
+         socklen_t len=sizeof(socklen_t);
+ #endif
+ 	if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) return 1;
+-#if (defined(WIN32) || defined(__WIN32__) || defined(__WIN32)) && !(defined(__CYGWIN32__) || defined(__CYGWIN__))
++#if (defined(WIN32) || defined(__WIN32__) || defined(__WIN32)) && !defined(__CYGWIN__)
+         if (getsockopt(fd, SOL_SOCKET, SO_SNDBUF, (char *)&val, &len) < 0) return 1;
+ 	WSACleanup();
+ #else
+@@ -481,7 +480,7 @@ int main(int argc, char **argv)
+ {
+ 	FILE *fp;
+         int fd,val=0;
+-#if (defined(WIN32) || defined(__WIN32__) || defined(__WIN32)) && !(defined(__CYGWIN32__) || defined(__CYGWIN__))
++#if (defined(WIN32) || defined(__WIN32__) || defined(__WIN32)) && !defined(__CYGWIN__)
+         int len=sizeof(int);
+ 	WSADATA wsaData;
+ 	WSAStartup(2, &wsaData);
+@@ -489,7 +488,7 @@ int main(int argc, char **argv)
+         socklen_t len=sizeof(socklen_t);
+ #endif
+ 	if ((fd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) return 1;
+-#if (defined(WIN32) || defined(__WIN32__) || defined(__WIN32)) && !(defined(__CYGWIN32__) || defined(__CYGWIN__))
++#if (defined(WIN32) || defined(__WIN32__) || defined(__WIN32)) && !defined(__CYGWIN__)
+         if (getsockopt(fd, SOL_SOCKET, SO_RCVBUF, (char *)&val, &len) < 0) return 1;
+ 	WSACleanup();
+ #else
+@@ -531,7 +530,7 @@ int main(int argc, char **argv)
+ {
+ 	FILE *fp;
+         int fd,val=0;
+-#if (defined(WIN32) || defined(__WIN32__) || defined(__WIN32)) && !(defined(__CYGWIN32__) || defined(__CYGWIN__))
++#if (defined(WIN32) || defined(__WIN32__) || defined(__WIN32)) && !defined(__CYGWIN__)
+         int len=sizeof(int);
+ 	WSADATA wsaData;
+ 	WSAStartup(2, &wsaData);
+@@ -539,7 +538,7 @@ int main(int argc, char **argv)
+         socklen_t len=sizeof(socklen_t);
+ #endif
+ 	if ((fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) return 1;
+-#if (defined(WIN32) || defined(__WIN32__) || defined(__WIN32)) && !(defined(__CYGWIN32__) || defined(__CYGWIN__))
++#if (defined(WIN32) || defined(__WIN32__) || defined(__WIN32)) && !defined(__CYGWIN__)
+         if (getsockopt(fd, SOL_SOCKET, SO_SNDBUF, (char *)&val, &len) < 0) return 1;
+ 	WSACleanup();
+ #else
+@@ -585,7 +584,7 @@ int main(int argc, char **argv)
+ {
+ 	FILE *fp;
+         int fd,val=0;
+-#if (defined(WIN32) || defined(__WIN32__) || defined(__WIN32)) && !(defined(__CYGWIN32__) || defined(__CYGWIN__))
++#if (defined(WIN32) || defined(__WIN32__) || defined(__WIN32)) && !defined(__CYGWIN__)
+         int len=sizeof(int);
+ 	WSADATA wsaData;
+ 	WSAStartup(2, &wsaData);
+@@ -593,7 +592,7 @@ int main(int argc, char **argv)
+         socklen_t len=sizeof(socklen_t);
+ #endif
+ 	if ((fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) return 1;
+-#if (defined(WIN32) || defined(__WIN32__) || defined(__WIN32)) && !(defined(__CYGWIN32__) || defined(__CYGWIN__))
++#if (defined(WIN32) || defined(__WIN32__) || defined(__WIN32)) && !defined(__CYGWIN__)
+         if (getsockopt(fd, SOL_SOCKET, SO_RCVBUF, (char *)&val, &len) < 0) return 1;
+ 	WSACleanup();
+ #else
+--- origsrc/squid-3.3.3/compat/osdetect.h	2013-03-12 11:17:07.000000000 +0100
++++ src/squid-3.3.3/compat/osdetect.h	2013-05-16 19:28:34.752071500 +0200
+@@ -64,9 +64,8 @@
+ #elif defined(__DragonFly__)
+ #define _SQUID_DRAGONFLY_ 1
+ 
+-#elif defined(__CYGWIN32__) || defined(__CYGWIN__)
++#elif defined(__CYGWIN__)
+ #define _SQUID_CYGWIN_ 1
+-#define _SQUID_WINDOWS_ 1
+ 
+ #elif defined(__MINGW32__) || defined(__MINGW__)
+ #define _SQUID_MINGW_ 1
+--- origsrc/squid-3.3.3/configure.ac	2013-03-12 11:18:22.000000000 +0100
++++ src/squid-3.3.3/configure.ac	2013-05-16 19:28:34.755571900 +0200
+@@ -182,7 +182,7 @@ fi
+ AC_SUBST(CGIEXT)
+ 
+ AM_CONDITIONAL(ENABLE_WIN32SPECIFIC,
+-               [test "x$squid_host_os" = "xmingw" -o "x$squid_host_os" = "xcygwin"])
++               [test "x$squid_host_os" = "xmingw"])
+ AM_CONDITIONAL(USE_IPC_WIN32,[test "x$squid_host_os" = "xmingw"])
+ 
+ if test "x$squid_host_os" = "xmingw"; then
+@@ -1132,10 +1132,10 @@ SQUID_YESNO([$enableval],[--disable-eui
+ ])
+ if test "x${enable_eui:=yes}" = "xyes" ; then
+   case "$squid_host_os" in
+-    linux|solaris|freebsd|openbsd|netbsd)
++    linux|solaris|freebsd|openbsd|netbsd|cygwin)
+       ${TRUE}
+       ;;
+-    cygwin|mingw)
++    mingw)
+       EUILIB="-liphlpapi"
+       ;;
+     *)
+--- origsrc/squid-3.3.3/helpers/negotiate_auth/SSPI/negotiate_sspi_auth.cc	2013-03-12 11:17:07.000000000 +0100
++++ src/squid-3.3.3/helpers/negotiate_auth/SSPI/negotiate_sspi_auth.cc	2013-05-16 19:28:34.758072200 +0200
+@@ -38,7 +38,7 @@
+  */
+ #include "squid.h"
+ #include "helpers/defines.h"
+-#include "libntlmauth/support_bits.cci"
++#include "lib/ntlmauth/support_bits.cci"
+ #include "sspwin32.h"
+ #include "util.h"
+ 
+--- origsrc/squid-3.3.3/helpers/ntlm_auth/SSPI/ntlm_sspi_auth.cc	2013-03-12 11:17:07.000000000 +0100
++++ src/squid-3.3.3/helpers/ntlm_auth/SSPI/ntlm_sspi_auth.cc	2013-05-16 19:28:34.760072500 +0200
+@@ -65,8 +65,7 @@ typedef unsigned char uchar;
+ 
+ #include "squid.h"
+ #include "helpers/defines.h"
+-#include "libntlmauth/ntlmauth.h"
+-#include "libntlmauth/support_bits.h"
++#include "ntlmauth/ntlmauth.h"
+ #include "sspwin32.h"
+ #include "util.h"
+ 
+--- origsrc/squid-3.3.3/lib/sspwin32.c	2013-03-12 11:17:07.000000000 +0100
++++ src/squid-3.3.3/lib/sspwin32.c	2013-05-16 19:28:34.762072700 +0200
+@@ -34,7 +34,7 @@
+ #include "squid.h"
+ #include "util.h"
+ 
+-#include "libntlmauth/ntlmauth.h"
++#include "ntlmauth/ntlmauth.h"
+ #include "sspwin32.h"
+ 
+ typedef struct _AUTH_SEQ {
+--- origsrc/squid-3.3.3/src/comm.cc	2013-03-12 11:17:07.000000000 +0100
++++ src/squid-3.3.3/src/comm.cc	2013-05-16 19:28:34.765073100 +0200
+@@ -1322,18 +1322,11 @@ commSetNonBlocking(int fd)
+ #if _SQUID_WINDOWS_
+     int nonblocking = TRUE;
+ 
+-#if _SQUID_CYGWIN_
+-    if (fd_table[fd].type != FD_PIPE) {
+-#endif
+-
+         if (ioctl(fd, FIONBIO, &nonblocking) < 0) {
+             debugs(50, 0, "commSetNonBlocking: FD " << fd << ": " << xstrerror() << " " << fd_table[fd].type);
+             return COMM_ERROR;
+         }
+ 
+-#if _SQUID_CYGWIN_
+-    } else {
+-#endif
+ #endif
+ #if !_SQUID_MSWIN_
+ 
+@@ -1348,9 +1341,6 @@ commSetNonBlocking(int fd)
+         }
+ 
+ #endif
+-#if _SQUID_CYGWIN_
+-    }
+-#endif
+     fd_table[fd].flags.nonblocking = 1;
+ 
+     return 0;
+--- origsrc/squid-3.3.3/src/dns_internal.cc	2013-03-12 11:17:07.000000000 +0100
++++ src/squid-3.3.3/src/dns_internal.cc	2013-05-16 19:28:34.767573400 +0200
+@@ -380,10 +380,6 @@ idnsParseResolvConf(void)
+         return;
+     }
+ 
+-#if _SQUID_CYGWIN_
+-    setmode(fileno(fp), O_TEXT);
+-#endif
+-
+     while (fgets(buf, RESOLV_BUFSZ, fp)) {
+         t = strtok(buf, w_space);
+ 
